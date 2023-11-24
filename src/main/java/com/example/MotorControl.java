@@ -1,43 +1,35 @@
 package com.example;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
 import javax.swing.JFrame;
 
 import com.pi4j.io.gpio.*;
 
 public class MotorControl {
     public static void main(String[] args) throws InterruptedException {
-        JFrame myFrame = new JFrame("Remote Control");
-        myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        MotorControllerPanel myPanel = new MotorControllerPanel();
+        JFrame myFrame = new JFrame("Remote Control");
+        myFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); // This close operation has been modified to work with the stolen code below
+
+        final MotorControllerPanel myPanel = new MotorControllerPanel();
 
         myFrame.getContentPane().add(myPanel);
 
         myFrame.pack();
         myFrame.setVisible(true);
 
-        // Create a GPIO controller
-        final GpioController gpio = GpioFactory.getInstance();
+        // The following code was stolen and then modified from https://stackoverflow.com/questions/5824049/running-a-method-when-closing-the-program
+            myFrame.addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentHidden(ComponentEvent e) {
+                    System.out.println("Beginning shutdown");
+                    myPanel.beginShutdown();
+                    ((JFrame)(e.getComponent())).dispose();
+                }
+            });
+        }
 
-        // Provision GPIO pin as an Output pin
-        GpioPinDigitalOutput pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "MyLED", PinState.HIGH);
-
-        // Set pin to high (or low) state
-        pin.high(); // or pin.low();
-
-        System.out.println("Did we get this far?");
-
-        // Sleep for a while
-        Thread.sleep(10000);
-
-        // Toggle pin state
-        pin.toggle();
-
-        System.out.println("Is the pin on?");
-        // Sleep again
-        Thread.sleep(1000);
-
-        // Release GPIO resources
-        gpio.shutdown();
     }
-}
+
