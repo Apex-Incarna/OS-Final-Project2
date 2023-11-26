@@ -26,8 +26,10 @@ public class HBridgeMotorControllerPanel extends JPanel {
     private final int HEIGHT = 400;
 
     private final GpioController gpio = GpioFactory.getInstance();
-    private GpioPinDigitalOutput in1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "In1", PinState.LOW);
-    private GpioPinDigitalOutput in2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "In2", PinState.LOW);
+    private GpioPinDigitalOutput RightIn1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "RightIn1", PinState.LOW);
+    private GpioPinDigitalOutput RightIn2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "RightIn2", PinState.LOW);
+    private GpioPinDigitalOutput LeftIn1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_25, "LefIn1", PinState.LOW);
+    private GpioPinDigitalOutput LeftIn2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_24, "LeftIn2", PinState.LOW);
 
     private JButton fowardButton;
     private JButton backwardButton;
@@ -64,7 +66,6 @@ public class HBridgeMotorControllerPanel extends JPanel {
         this.requestFocusInWindow();
         this.addKeyListener(new KeyboardListener());
 
-        
     }
 
     public void motion(int left, int right) {
@@ -73,8 +74,11 @@ public class HBridgeMotorControllerPanel extends JPanel {
 
     public void beginShutdown() {
 
-        in1.low();
-        in2.low();
+        RightIn1.low();
+        RightIn2.low();
+
+        LeftIn1.low();
+        LeftIn2.low();
 
         gpio.shutdown();
 
@@ -99,19 +103,35 @@ public class HBridgeMotorControllerPanel extends JPanel {
             System.out.println(arg0.getKeyCode());
 
             if (arg0.getKeyCode() == KeyEvent.VK_UP) {
-                
-                in2.low();
-                in1.high();
+
+                RightIn2.low();
+                RightIn1.high();
+
+                LeftIn1.low();
+                LeftIn2.high();
 
             } else if (arg0.getKeyCode() == KeyEvent.VK_DOWN) {
-                
-                in1.low();
-                in2.high();
+
+                RightIn1.low();
+                RightIn2.high();
+
+                LeftIn1.high();
+                LeftIn2.low();
 
             } else if (arg0.getKeyCode() == KeyEvent.VK_LEFT) {
-                
+
+                LeftIn2.low();
+
+                RightIn2.low();
+                RightIn1.high();
+
             } else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
-                
+
+                RightIn1.low();
+
+                LeftIn1.low();
+                LeftIn2.high();
+
             }
 
         }
@@ -121,17 +141,23 @@ public class HBridgeMotorControllerPanel extends JPanel {
             System.out.println(arg0.getKeyCode());
 
             if (arg0.getKeyCode() == KeyEvent.VK_UP) {
-                
-                in1.low();
+
+                RightIn1.low();
+                LeftIn2.low();
 
             } else if (arg0.getKeyCode() == KeyEvent.VK_DOWN) {
-                
-                in2.low();
+
+                RightIn2.low();
+                LeftIn1.low();
 
             } else if (arg0.getKeyCode() == KeyEvent.VK_LEFT) {
-                
+
+                RightIn1.low();
+
             } else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
-                
+
+                LeftIn2.low();
+
             }
         }
 
