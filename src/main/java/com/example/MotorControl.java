@@ -13,7 +13,7 @@ public class MotorControl {
         JFrame myFrame = new JFrame("Remote Control");
         myFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); // This close operation has been modified to work with the stolen code below
 
-        final MotorControllerPanel myPanel = new MotorControllerPanel();
+        final HBridgeMotorControllerPanel myPanel = new HBridgeMotorControllerPanel();
 
         myFrame.getContentPane().add(myPanel);
 

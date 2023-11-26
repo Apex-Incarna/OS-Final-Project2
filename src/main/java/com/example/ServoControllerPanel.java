@@ -7,31 +7,29 @@ import javax.xml.crypto.dsig.keyinfo.KeyValue;
 
 import org.w3c.dom.events.Event;
 
-import com.example.MotorControllerPanel.KeyboardListener;
+import com.example.ServoControllerPanel.KeyboardListener;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 
-public class MotorControllerPanel extends JPanel {
+public class ServoControllerPanel extends JPanel {
     // ATTRIBUTES
     private final int WIDTH = 800;
     private final int HEIGHT = 400;
 
     private final GpioController gpio = GpioFactory.getInstance();
-    private GpioPinDigitalOutput pinLeft1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "Lefty1", PinState.LOW);
-    private GpioPinDigitalOutput pinLeft2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "Lefty2", PinState.LOW);
-    private GpioPinDigitalOutput pinRight1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_11, "Righty1", PinState.LOW);
-    private GpioPinDigitalOutput pinRight2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_31, "Righty2", PinState.LOW);
-    private int leftState = 0;
-    private int rightState = 0;
+    private GpioPinDigitalOutput servo1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, "Servo1", PinState.LOW);
+    private Runtime runTime = Runtime.getRuntime();
 
     private JButton fowardButton;
     private JButton backwardButton;
@@ -40,7 +38,7 @@ public class MotorControllerPanel extends JPanel {
 
     // CONSTRUCTORS
 
-    public MotorControllerPanel() {
+    public ServoControllerPanel() {
         super();
         initPanel();
     }
@@ -49,6 +47,7 @@ public class MotorControllerPanel extends JPanel {
 
     public void initPanel() {
         setPreferredSize(new DimensionUIResource(WIDTH, HEIGHT));
+        this.setBackground(Color.RED); // Change the color to distinguish it from MotorControllerPanel
 
         // Instantiate and add the buttons
         JButton fowardButton = new JButton("/\\");
@@ -68,58 +67,21 @@ public class MotorControllerPanel extends JPanel {
         this.requestFocusInWindow();
         this.addKeyListener(new KeyboardListener());
 
+        try {
+            runTime.exec("gpio mode 1 pwm");
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public void motion(int left, int right) {
-        leftState += left;
-        rightState += right;
 
-        if (leftState > 1) {
-            leftState = 1;
-        }
-        if (leftState < -1) {
-            leftState = -1;
-        }
-
-        if (rightState > 1) {
-            rightState = 1;
-        }
-        if (rightState < -1) {
-            rightState = -1;
-        }
-
-        if (leftState == 1) {
-            pinLeft1.high();
-            pinLeft2.low();
-        } else if (leftState == -1) {
-            pinLeft1.low();
-            pinLeft2.high();
-        } else {
-            pinLeft1.low();
-            pinRight2.low();
-        }
-
-        if (leftState == 1) {
-            pinRight1.high();
-            pinRight2.low();
-        } else if (leftState == -1) {
-            pinRight1.low();
-            pinRight2.high();
-        } else {
-            pinRight1.low();
-            pinRight2.low();
-        }
-
-        System.out.println(leftState);
-        System.out.println(rightState);
     }
 
     public void beginShutdown() {
-        pinLeft1.low();
-        pinRight2.low();
 
-        pinRight1.low();
-        pinRight2.low();
+        servo1.low();
 
         gpio.shutdown();
 

@@ -7,7 +7,7 @@ import javax.xml.crypto.dsig.keyinfo.KeyValue;
 
 import org.w3c.dom.events.Event;
 
-import com.example.MotorControllerPanel.KeyboardListener;
+import com.example.HBridgeMotorControllerPanel.KeyboardListener;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
@@ -20,18 +20,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-public class MotorControllerPanel extends JPanel {
+public class HBridgeMotorControllerPanel extends JPanel {
     // ATTRIBUTES
     private final int WIDTH = 800;
     private final int HEIGHT = 400;
 
     private final GpioController gpio = GpioFactory.getInstance();
-    private GpioPinDigitalOutput pinLeft1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "Lefty1", PinState.LOW);
-    private GpioPinDigitalOutput pinLeft2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "Lefty2", PinState.LOW);
-    private GpioPinDigitalOutput pinRight1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_11, "Righty1", PinState.LOW);
-    private GpioPinDigitalOutput pinRight2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_31, "Righty2", PinState.LOW);
-    private int leftState = 0;
-    private int rightState = 0;
+    private GpioPinDigitalOutput en12 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "En12", PinState.LOW);
+    private GpioPinDigitalOutput in1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "In1", PinState.LOW);
 
     private JButton fowardButton;
     private JButton backwardButton;
@@ -40,7 +36,7 @@ public class MotorControllerPanel extends JPanel {
 
     // CONSTRUCTORS
 
-    public MotorControllerPanel() {
+    public HBridgeMotorControllerPanel() {
         super();
         initPanel();
     }
@@ -68,58 +64,18 @@ public class MotorControllerPanel extends JPanel {
         this.requestFocusInWindow();
         this.addKeyListener(new KeyboardListener());
 
+        // Enable the first motor
+        en12.high();
     }
 
     public void motion(int left, int right) {
-        leftState += left;
-        rightState += right;
 
-        if (leftState > 1) {
-            leftState = 1;
-        }
-        if (leftState < -1) {
-            leftState = -1;
-        }
-
-        if (rightState > 1) {
-            rightState = 1;
-        }
-        if (rightState < -1) {
-            rightState = -1;
-        }
-
-        if (leftState == 1) {
-            pinLeft1.high();
-            pinLeft2.low();
-        } else if (leftState == -1) {
-            pinLeft1.low();
-            pinLeft2.high();
-        } else {
-            pinLeft1.low();
-            pinRight2.low();
-        }
-
-        if (leftState == 1) {
-            pinRight1.high();
-            pinRight2.low();
-        } else if (leftState == -1) {
-            pinRight1.low();
-            pinRight2.high();
-        } else {
-            pinRight1.low();
-            pinRight2.low();
-        }
-
-        System.out.println(leftState);
-        System.out.println(rightState);
     }
 
     public void beginShutdown() {
-        pinLeft1.low();
-        pinRight2.low();
 
-        pinRight1.low();
-        pinRight2.low();
+        en12.low();
+        in1.low();
 
         gpio.shutdown();
 
@@ -144,13 +100,16 @@ public class MotorControllerPanel extends JPanel {
             System.out.println(arg0.getKeyCode());
 
             if (arg0.getKeyCode() == KeyEvent.VK_UP) {
-                motion(1, 1);
+                
+
+                in1.high();
+
             } else if (arg0.getKeyCode() == KeyEvent.VK_DOWN) {
-                motion(-1, -1);
+                
             } else if (arg0.getKeyCode() == KeyEvent.VK_LEFT) {
-                motion(0, 1);
+                
             } else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
-                motion(1, 0);
+                
             }
 
         }
@@ -160,13 +119,16 @@ public class MotorControllerPanel extends JPanel {
             System.out.println(arg0.getKeyCode());
 
             if (arg0.getKeyCode() == KeyEvent.VK_UP) {
-                motion(-1, -1);
+                
+
+                in1.low();
+
             } else if (arg0.getKeyCode() == KeyEvent.VK_DOWN) {
-                motion(1, 1);
+                
             } else if (arg0.getKeyCode() == KeyEvent.VK_LEFT) {
-                motion(0, -1);
+                
             } else if (arg0.getKeyCode() == KeyEvent.VK_RIGHT) {
-                motion(-1, 0);
+                
             }
         }
 
